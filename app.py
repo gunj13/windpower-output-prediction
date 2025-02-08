@@ -2,6 +2,28 @@ import requests
 import pandas as pd
 import pickle
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Allow all origins, or restrict to specific ones
+origins = [
+    "*",  # Allows requests from any frontend (use caution in production)
+    # "https://your-frontend-domain.com"  # Replace with your frontend URL for better security
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+
+@app.get("/")
+def read_root():
+    return {"message": "CORS enabled API is working!"}
+
 
 # Load saved model and scaler
 with open("wind_power_model.pkl", "rb") as f:
