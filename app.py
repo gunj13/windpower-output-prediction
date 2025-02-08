@@ -35,6 +35,20 @@ with open("scaler.pkl", "rb") as f:
 
 app = FastAPI()
 
+origins = [
+    "*",  # Allows requests from any frontend (use caution in production)
+    # "https://your-frontend-domain.com"  # Replace with your frontend URL for better security
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],
+    expose_headers=["*"],# Allows all headers
+)
+
 def get_wind_data(latitude: float, longitude: float, start_date: str, end_date: str) -> pd.DataFrame:
     """ Fetch wind data from Open-Meteo API. """
     url = "https://api.open-meteo.com/v1/forecast"
