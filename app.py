@@ -2,7 +2,6 @@ import requests
 import pandas as pd
 import pickle
 from fastapi import FastAPI
-from pydantic import BaseModel
 
 # Load saved model and scaler
 with open("wind_power_model.pkl", "rb") as f:
@@ -12,13 +11,6 @@ with open("scaler.pkl", "rb") as f:
     scaler = pickle.load(f)
 
 app = FastAPI()
-
-# Define request model
-class WindPowerRequest(BaseModel):
-    latitude: float
-    longitude: float
-    start_date: str
-    end_date: str
 
 def get_wind_data(latitude: float, longitude: float, start_date: str, end_date: str) -> pd.DataFrame:
     """ Fetch wind data from Open-Meteo API. """
@@ -38,7 +30,7 @@ def get_wind_data(latitude: float, longitude: float, start_date: str, end_date: 
     if 'hourly' not in data or 'time' not in data['hourly']:
         return None
 
-    # Directly fetch values (No conversion needed)
+    # Fetch values without conversion (API data is already in the correct format)
     df = pd.DataFrame({
         'timestamp': pd.to_datetime(data['hourly']['time']),
         'temperature_2m': data['hourly'].get('temperature_2m'),
@@ -53,10 +45,10 @@ def get_wind_data(latitude: float, longitude: float, start_date: str, end_date: 
 
     return df
 
-@app.post("/predict")
-def predict_wind_power(request: WindPowerRequest):
-    """ API endpoint for predicting wind power """
-    df = get_wind_data(request.latitude, request.longitude, request.start_date, request.end_date)
+@app.get("/predict")
+def predict_wind_power(latitude: float, longitude: float, start_date: str, end_date: str):
+    """ API endpoint for predicting wind power (Now uses GET request) """
+    df = get_wind_data(latitude, longitude, start_date, end_date)
 
     if df is None:
         return {"error": "No data available from API"}
